@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">EventHive</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+
+<!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    
+    <string-array name="tabstring">
+        <item>Pending</item>
+        <item>Created</item>
+        <item>Accepted</item>
+    </string-array>
+
+    <string-array name="eventname">
+        <item>Konika</item>
+        <item>Preethi</item>
+        <item>Karthi</item>
+    </string-array>
+
+    <string-array name="eventdesc">
+        <item>Beautiful but not attractive</item>
+        <item>Admiring and astonishing</item>
+        <item>Someone understanding</item>
+    </string-array>
+</resources>
