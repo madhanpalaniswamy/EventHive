@@ -4,6 +4,7 @@ package eventhive.com.eventhive;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +16,23 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+
 
 /**
  * A simple {@link Fragment} subclass.
@@ -22,10 +40,11 @@ import android.widget.Toast;
 public class AcceptedEvents extends Fragment implements AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener {
 
     ListView acceptedlist;
-    String[] eventsname;
-    String[] eventsdesc;
+    List<String> eventsname = new ArrayList<String>();
+    List<String> eventsdesc = new ArrayList<String>();
+    String displayURL = "http://madtry.ngrok.io/event/event_display.php";
     EventListAdapter eventadapter;
-    int[] eventimages = {R.drawable.konika, R.drawable.preethi, R.drawable.karthika};
+    int[] eventimages = {R.drawable.konika, R.drawable.preethi, R.drawable.karthika,R.drawable.ic_launcher};
 
     public AcceptedEvents() {
         // Required empty public constructor
@@ -42,8 +61,46 @@ public class AcceptedEvents extends Fragment implements AdapterView.OnItemClickL
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        EventListAdapterBackgroundTask eventtask = new EventListAdapterBackgroundTask();
-        eventtask.execute();
+        acceptedlist = (ListView) getActivity().findViewById(R.id.acceptedlist);
+        //EventListAdapterBackgroundTask eventtask = new EventListAdapterBackgroundTask();
+        //eventtask.execute();
+
+
+        RequestQueue requestQueue = Volley.newRequestQueue(getActivity());
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, displayURL, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+
+                if (response != null && response.length() > 0)
+
+
+
+                try {
+                    JSONArray jarray = response.getJSONArray("events");
+                    for (int i = 0; i < jarray.length(); i++) {
+                        JSONObject jevent = jarray.getJSONObject(i);
+                        eventsname.add(jevent.getString("Event_Name"));
+                        eventsdesc.add(jevent.getString("Event_Desc"));
+                        //nametest = nametest+"~~~"+ jevent.getString("Event_Name");
+                        //desctest = desctest+"~~~"+ jevent.getString("Event_Desc");
+
+
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                eventadapter = new EventListAdapter(getActivity(), eventsname, eventimages, eventsdesc);
+                acceptedlist.setAdapter(eventadapter);
+                Toast.makeText(getActivity(),eventsname.toString(),Toast.LENGTH_LONG).show();
+                Toast.makeText(getActivity(),eventsdesc.toString(),Toast.LENGTH_LONG).show();
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Toast.makeText(getActivity(),error.getMessage(),Toast.LENGTH_LONG).show();
+            }
+        });
+        requestQueue.add(request);
         // ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), R.layout.list_structure, R.id.listtext);
         acceptedlist.setOnItemClickListener(this);
 
@@ -68,8 +125,8 @@ public class AcceptedEvents extends Fragment implements AdapterView.OnItemClickL
         @Override
         protected void onPreExecute() {
             acceptedlist = (ListView) getActivity().findViewById(R.id.acceptedlist);
-            eventsname = getResources().getStringArray(R.array.eventname);
-            eventsdesc = getResources().getStringArray(R.array.eventdesc);
+            eventsname = new ArrayList<String>(Arrays.asList(getResources().getStringArray(R.array.eventname)));
+            eventsdesc = new ArrayList<String>(Arrays.asList(getResources().getStringArray(R.array.eventdesc)));
         }
 
         @Override
@@ -91,10 +148,10 @@ public class AcceptedEvents extends Fragment implements AdapterView.OnItemClickL
 class EventListAdapter extends ArrayAdapter<String> {
     Context context;
     int[] images;
-    String[] names;
-    String[] desc;
+    List<String> names;
+    List<String> desc;
 
-    EventListAdapter(Context c, String[] eventsname, int[] imgs, String[] eventdesc) {
+    EventListAdapter(Context c, List<String> eventsname, int[] imgs, List<String> eventdesc) {
         super(c, R.layout.list_structure, R.id.eventtext, eventsname);
         this.context = c;
         this.images = imgs;
@@ -117,8 +174,8 @@ class EventListAdapter extends ArrayAdapter<String> {
             eholder = (EventViewHolder) row.getTag();
         }
         eholder.eventimage.setImageResource(images[position]);
-        eholder.eventname.setText(names[position]);
-        eholder.eventdesc.setText(desc[position]);
+        eholder.eventname.setText(names.get(position));
+        eholder.eventdesc.setText(desc.get(position));
         return row;
     }
 }
